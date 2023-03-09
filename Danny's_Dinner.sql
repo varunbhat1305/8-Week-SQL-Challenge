@@ -73,23 +73,33 @@ WITH first_item_cte AS
  FROM sales s, menu m
 where s.product_id = m.product_id
 )
-SELECT customer_id, product_name
+SELECT customer_id, product_name as First_Item
 FROM first_item_cte
 WHERE rnk = 1
 GROUP BY customer_id;
 
 #04.What is the most purchased item on the menu and how many times was it purchased by all customers?
-Select m.product_name, count(s.product_id) as count
+Select m.product_name, count(s.product_id) as purchase_count
 from sales s, menu m
 where s.product_id=m.product_id
 group by m.product_name
-order by count desc
+order by purchase_count desc
 limit 1;
 
-05.Which item was the most popular for each customer?
-Select s.customer_id,count(s.product_id)
-from sales s,menu m
-group by s.customer_id,s.product_id
+#05.Which item was the most popular for each customer?
+WITH popular_item_cte AS
+(
+ SELECT s.customer_id, m.product_name, 
+  COUNT(m.product_id) AS order_count,
+  DENSE_RANK() OVER(PARTITION BY s.customer_id
+  ORDER BY COUNT(s.customer_id) DESC) AS rnk
+FROM menu m, sales s
+where m.product_id = s.product_id
+GROUP BY s.customer_id, m.product_name
+)
+SELECT customer_id, product_name, order_count
+FROM popular_item_cte 
+WHERE rnk = 1;
 
 06.Which item was purchased first by the customer after they became a member?
 Select s.customer_id,m.product_name
