@@ -76,7 +76,7 @@ where s.product_id = m.product_id
 SELECT customer_id, product_name as First_Item
 FROM first_item_cte
 WHERE rnk = 1
-GROUP BY customer_id;
+GROUP BY customer_id,product_name;
 
 #04.What is the most purchased item on the menu and how many times was it purchased by all customers?
 Select m.product_name, count(s.product_id) as purchase_count
@@ -163,4 +163,26 @@ order by s.customer_id;
 
 
 #BONUS Questions
-  #Creating a Table for Bonus Challenges
+  #Join All the Things
+create view JoinAll as
+select s.customer_id,s.order_date,m.product_name,m.price,
+CASE
+ WHEN s.order_date < ms.join_date THEN 'N'
+ WHEN s.order_date >= ms.join_date THEN 'Y'
+ ELSE 'N'
+ END AS member
+FROM sales s 
+LEFT JOIN menu m ON s.product_id = m.product_id
+LEFT JOIN members ms ON s.customer_id = ms.customer_id;
+select * from JoinAll;
+	
+#Rank All Things
+create view RankAll as
+SELECT *,
+ CASE
+ WHEN member = 'N' then NULL
+ ELSE
+  dense_rank () OVER(PARTITION BY customer_id,member
+  ORDER BY order_date) END AS ranking
+FROM JoinAll;
+select * from RankAll
