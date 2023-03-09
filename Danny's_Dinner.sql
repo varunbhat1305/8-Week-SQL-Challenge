@@ -101,73 +101,68 @@ SELECT customer_id, product_name, order_count
 FROM popular_item_cte 
 WHERE rnk = 1;
 
-06.Which item was purchased first by the customer after they became a member?
-Select s.customer_id,m.product_name
-from sales s,menu m, members ms
-where s.customer_id = ms.customer_id
-and s.product_id=m.product_id
-and ms.join_date <= s.order_date
-group by s.customer_id;
+#06.Which item was purchased first by the customer after they became a member?
+WITH after_member_cte AS 
+(
+ SELECT s.customer_id,s.product_id,
+         DENSE_RANK() OVER(PARTITION BY s.customer_id
+  ORDER BY s.order_date) AS rnk
+     FROM sales s, members ms
+  where s.customer_id = ms.customer_id
+ and s.order_date >= ms.join_date
+)
+SELECT amc.customer_id, m.product_name 
+FROM after_member_cte amc,menu m
+where amc.product_id = m.product_id
+and rnk = 1
+order by amc.customer_id;
 
-07.Which item was purchased just before the customer became a member?
-Select s.customer_id,m.product_name
-from sales s,menu m, members ms
-where s.customer_id = ms.customer_id
-and s.product_id=m.product_id
-and ms.join_date > s.order_date;
+
+#07.Which item was purchased just before the customer became a member?
+WITH before_member_cte AS 
+(
+ SELECT s.customer_id, s.product_id,
+         DENSE_RANK() OVER(PARTITION BY s.customer_id
+         ORDER BY s.order_date DESC) AS rnk
+ FROM sales s,members ms
+  where s.customer_id = ms.customer_id
+ and s.order_date < ms.join_date
+)
+SELECT bmc.customer_id, m.product_name 
+FROM before_member_cte bmc,menu m
+ where bmc.product_id = m.product_id
+and rnk = 1
+order by bmc.customer_id;
 
 #08.What is the total items and amount spent for each member before they became a member?
-Select s.customer_id,count(s.product_id) as count, sum(m.price) as spent
+Select s.customer_id,count(s.product_id) as item_count, sum(m.price) as amount_spent
 from sales s,menu m, members ms
 where s.customer_id = ms.customer_id
 and s.product_id=m.product_id
 and s.order_date < ms.join_date
-group by s.customer_id;
+group by s.customer_id
+order by s.customer_id;
 
 #09.If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?
 Select s.customer_id, 
-SUM(case when m.product_name='sushi' then 20*m.price else 10*m.price End) as Loyalty
+SUM(case when m.product_name='sushi' then 20*m.price else 10*m.price End) as Loyalty_points
 from sales s,menu m
 where s.product_id=m.product_id
 group by s.customer_id;
 
 #10.In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi - how many points do customer A and B have at the end of January?
 Select s.customer_id, 
-SUM(case when (Extract(Day from s.order_date) -Extract(Day from ms.join_date))<=7  then 20*m.price
- when (Extract(Day from s.order_date) -Extract(Day from ms.join_date))>7 and m.product_name='sushi' then 20*m.price
- else 10*m.price End) as Loyalty
+SUM(case when m.product_name='sushi' then 20*m.price
+when (Extract(Day from s.order_date) -Extract(Day from ms.join_date)) between 0 and 6 then 20*m.price
+ else 10*m.price End) as Loyalty_points
 from sales s,menu m, members ms
 where s.product_id=m.product_id
 and s.customer_id =ms.customer_id
-and ms.join_date <= s.order_date
 and extract(Month from s.order_date) =1
-group by s.customer_id;
+group by s.customer_id
+order by s.customer_id;
 
 
 #BONUS Questions
   #Creating a Table for Bonus Challenges
-  CREATE TABLE orders (
-   customer_id VARCHAR(10),
-   order_date DATE,
-   product_name VARCHAR(50),
-   price INT,
-   member VARCHAR(1)
-);
 
-INSERT INTO orders (customer_id, order_date, product_name, price, member) 
-VALUES 
-('A', '2021-01-01', 'curry', 15, 'N'),
-('A', '2021-01-01', 'sushi', 10, 'N'),
-('A', '2021-01-07', 'curry', 15, 'Y'),
-('A', '2021-01-10', 'ramen', 12, 'Y'),
-('A', '2021-01-11', 'ramen', 12, 'Y'),
-('A', '2021-01-11', 'ramen', 12, 'Y'),
-('B', '2021-01-01', 'curry', 15, 'N'),
-('B', '2021-01-02', 'curry', 15, 'N'),
-('B', '2021-01-04', 'sushi', 10, 'N'),
-('B', '2021-01-11', 'sushi', 10, 'Y'),
-('B', '2021-01-16', 'ramen', 12, 'Y'),
-('B', '2021-02-01', 'ramen', 12, 'Y'),
-('C', '2021-01-01', 'ramen', 12, 'N'),
-('C', '2021-01-01', 'ramen', 12, 'N'),
-('C', '2021-01-07', 'ramen', 12, 'N');
