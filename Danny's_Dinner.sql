@@ -1,8 +1,8 @@
 # Database Creation & Data Insertion
-# Creating Schema
+	# Creating Schema
 CREATE SCHEMA IF NOT EXISTS dannys_dinner;
 
-#Creating Sales Table
+	#Creating Sales Table
 CREATE TABLE sales (
   customer_id VARCHAR(1),
   order_date DATE,
@@ -27,7 +27,7 @@ VALUES
   ('C', '2021-01-01', '3'),
   ('C', '2021-01-07', '3');
  
-#Creating Menu Table
+	#Creating Menu Table
 CREATE TABLE menu (
   product_id INTEGER,
   product_name VARCHAR(5),
@@ -40,7 +40,7 @@ VALUES
   ('2', 'curry', '15'),
   ('3', 'ramen', '12');
   
-#Creating Members Table
+	#Creating Members Table
 CREATE TABLE members (
   customer_id VARCHAR(1),
   join_date DATE
@@ -52,7 +52,7 @@ VALUES
   ('B', '2021-01-09');
  
  
-# Case Study Questions
+					# Case Study Questions
 # 01. What is the total amount each customer spent at the restaurant?
 select s.customer_id, sum(m.price) as Total_Spent
 from sales s,menu m
@@ -117,7 +117,6 @@ where amc.product_id = m.product_id
 and rnk = 1
 order by amc.customer_id;
 
-
 #07.Which item was purchased just before the customer became a member?
 WITH before_member_cte AS 
 (
@@ -165,4 +164,3 @@ order by s.customer_id;
 
 #BONUS Questions
   #Creating a Table for Bonus Challenges
-
