@@ -111,7 +111,7 @@ Select s.customer_id,
 SUM(case when m.product_name='sushi' then 20*m.price else 10*m.price End) as Loyalty
 from sales s,menu m
 where s.product_id=m.product_id
-group by s.customer_name;
+group by s.customer_id;
 
 #10.In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi - how many points do customer A and B have at the end of January?
 Select s.customer_id, 
