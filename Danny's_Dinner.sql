@@ -1,3 +1,4 @@
+# Database Creation & Data Insertion
 # Creating Schema
 CREATE SCHEMA IF NOT EXISTS dannys_dinner;
 
@@ -49,26 +50,33 @@ INSERT INTO members
 VALUES
   ('A', '2021-01-07'),
   ('B', '2021-01-09');
-  
+ 
+ 
 # Case Study Questions
-#01. What is the total amount each customer spent at the restaurant?
-select s.customer_id,sum(m.price) as Total_Spent
+# 01. What is the total amount each customer spent at the restaurant?
+select s.customer_id, sum(m.price) as Total_Spent
 from sales s,menu m
 where s.product_id=m.product_id
 group by s.customer_id;
 
 #02.How many days has each customer visited the restaurant?
-SELECT customer_id, COUNT(DISTINCT(order_date)) as No_of_Visits
+select customer_id, COUNT(DISTINCT(order_date)) as No_of_Days_visited
 from sales
 group by customer_id;
 
 #03.What was the first item from the menu purchased by each customer?
-Select s.customer_id, m.product_name ,s.order_date
-from sales s,menu m
-where s.product_id=m.product_id
-group by s.customer_id
-having s.order_date=min(s.order_date); 
-
+WITH first_item_cte AS
+(
+ SELECT customer_id, product_name,
+  DENSE_RANK() OVER(PARTITION BY s.customer_id
+  ORDER BY s.order_date) AS rnk
+ FROM sales s, menu m
+where s.product_id = m.product_id
+)
+SELECT customer_id, product_name
+FROM first_item_cte
+WHERE rnk = 1
+GROUP BY customer_id;
 
 #04.What is the most purchased item on the menu and how many times was it purchased by all customers?
 Select m.product_name, count(s.product_id) as count
