@@ -114,5 +114,32 @@ VALUES
   (10, 'Salami'),
   (11, 'Tomatoes'),
   (12, 'Tomato Sauce');
+  #Cleaning Data
+
+  
   
   #Case Study Questions
+		#A.Pizza Metrics
+
+#01.How many pizzas were ordered?
+select count(pizza_id) as pizza_count
+from customer_orders;
+
+#02.How many unique customer orders were made?
+select count(distinct(customer_id)) as customer_count
+from customer_orders;
+
+#03.How many successful orders were delivered by each runner?
+select runner_id,count(order_id) as order_count
+from runner_orders
+where 
+group by runner_id
+order by runner_id;
+
+#04.How many of each type of pizza was delivered?
+#05How many Vegetarian and Meatlovers were ordered by each customer?
+#06What was the maximum number of pizzas delivered in a single order?
+#07For each customer, how many delivered pizzas had at least 1 change and how many had no changes?
+#08How many pizzas were delivered that had both exclusions and extras?
+#09What was the total volume of pizzas ordered for each hour of the day?
+#10What was the volume of orders for each day of the week?
