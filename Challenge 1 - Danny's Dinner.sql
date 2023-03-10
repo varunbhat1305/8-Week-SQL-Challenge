@@ -3,6 +3,7 @@
 CREATE SCHEMA IF NOT EXISTS dannys_dinner;
 
 	#Creating Sales Table
+DROP TABLE IF EXISTS sales;
 CREATE TABLE sales (
   customer_id VARCHAR(1),
   order_date DATE,
@@ -28,6 +29,7 @@ VALUES
   ('C', '2021-01-07', '3');
  
 	#Creating Menu Table
+DROP TABLE IF EXISTS menu;
 CREATE TABLE menu (
   product_id INTEGER,
   product_name VARCHAR(5),
@@ -41,6 +43,7 @@ VALUES
   ('3', 'ramen', '12');
   
 	#Creating Members Table
+DROP TABLE IF EXISTS members;
 CREATE TABLE members (
   customer_id VARCHAR(1),
   join_date DATE
