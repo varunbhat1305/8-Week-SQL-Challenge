@@ -251,9 +251,63 @@ order by WEEKDAY(order_time);
 
 		#B. Runner and Customer Experience
 #01.How many runners signed up for each 1 week period? (i.e. week starts 2021-01-01)
+select week(registration_date,"2021-01-01")+1 as wk,count(runner_id) as runner_count
+from runners
+group by wk;
+
 #02.What was the average time in minutes it took for each runner to arrive at the Pizza Runner HQ to pickup the order?
+select ro.runner_id,avg(minute(timediff(co.order_time,ro.pickup_time))) as avg_time
+from cust_ord_cl co,run_ord_cl ro
+where co.order_id = ro.order_id
+and ro.pickup_time is not null
+group by ro.runner_id;
+
 #03.Is there any relationship between the number of pizzas and how long the order takes to prepare?
+with rlt_cte as
+(
+select co.order_id,count(co.pizza_id) as pizza_count,
+avg(minute(timediff(co.order_time,ro.pickup_time))) as tm
+from cust_ord_cl co,run_ord_cl ro
+where co.order_id = ro.order_id
+and ro.pickup_time is not null
+group by co.order_id
+)
+select pizza_count,round(avg(tm)) as avg_time
+from rlt_cte
+group by pizza_count;
+
 #04.What was the average distance travelled for each customer?
+select co.customer_id,Round(avg(ro.distance),2) as avg_distance
+from cust_ord_cl co,run_ord_cl ro
+where co.order_id = ro.order_id
+and ro.distance is not null
+group by co.customer_id;
+
 #05.What was the difference between the longest and shortest delivery times for all orders?
+select max(duration) - min(duration) as deliver_time_diff
+from run_ord_cl;
+
 #06.What was the average speed for each runner for each delivery and do you notice any trend for these values?
+select runner_id,order_id,round((60*distance/duration),2) as speed
+from run_ord_cl
+where distance is not null
+group by runner_id,order_id
+order by runner_id,order_id;
+
 #07.What is the successful delivery percentage for each runner?
+select runner_id,Round(100*(count(distance)/count(*)),2) as Success_rate
+from run_ord_cl
+group by runner_id;
+
+		#C. Ingredient Optimisation
+#01.What are the standard ingredients for each pizza?
+#02.What was the most commonly added extra?
+#03.What was the most common exclusion?
+#04.Generate an order item for each record in the customers_orders table in the format of one of the following:
+#Meat Lovers
+#Meat Lovers - Exclude Beef
+#Meat Lovers - Extra Bacon
+#Meat Lovers - Exclude Cheese, Bacon - Extra Mushroom, Peppers
+#05.Generate an alphabetically ordered comma separated ingredient list for each pizza order from the customer_orders table and add a 2x in front of any relevant ingredients
+#for example: "Meat Lovers: 2xBacon, Beef, ... , Salami"
+#06.What is the total quantity of each ingredient used in all delivered pizzas sorted by most frequent first?
