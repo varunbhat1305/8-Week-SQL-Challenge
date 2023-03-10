@@ -188,4 +188,4 @@ SELECT *,
   dense_rank () OVER(PARTITION BY customer_id,member
   ORDER BY order_date) END AS ranking
 FROM JoinAll;
-select * from RankAll
+select * from RankAll;
