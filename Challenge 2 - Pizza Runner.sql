@@ -121,11 +121,11 @@ drop table if exists cust_ord_cl;
 Create table cust_ord_cl
 SELECT order_id, customer_id, pizza_id, 
 CASE
-	WHEN exclusions like '' or extras LIKE 'null' THEN null
+	WHEN exclusions like '' or exclusions LIKE '%null%' THEN null 
 	ELSE exclusions
 	END AS exclusions,
 CASE
-	WHEN extras like '' or extras LIKE 'null' THEN null
+	WHEN extras like '' or extras LIKE '%null%' THEN null
 	ELSE extras
 	END AS extras,
 	order_time
@@ -136,23 +136,23 @@ drop table if exists run_ord_cl;
 create table run_ord_cl 
 SELECT order_id, runner_id,  
 CASE
-	WHEN pickup_time LIKE 'null' THEN null
+	WHEN pickup_time LIKE '%null%' THEN null
 	ELSE pickup_time
 	END AS pickup_time,
 CASE
-	WHEN distance LIKE 'null' THEN null
+	WHEN distance LIKE '%null%' THEN null
 	WHEN distance LIKE '%km' THEN TRIM('km' from distance)
 	ELSE distance
 	END AS distance,
 CASE
-	WHEN duration LIKE 'null' THEN null
+	WHEN duration LIKE '%null%' THEN null
 	WHEN duration LIKE '%mins' THEN TRIM('mins' from duration)
 	WHEN duration LIKE '%minute' THEN TRIM('minute' from duration)
 	WHEN duration LIKE '%minutes' THEN TRIM('minutes' from duration)
 	ELSE duration
 	END AS duration,
 CASE
-	WHEN cancellation like '' or cancellation LIKE 'null' or cancellation LIKE 'NaN'THEN null
+	WHEN cancellation like '' or cancellation LIKE '%null%' or cancellation LIKE '%NaN%'THEN null
 	ELSE cancellation
 	END AS cancellation
 FROM runner_orders;
@@ -162,29 +162,98 @@ modify pickup_time DATETIME,
 modify COLUMN distance FLOAT,
 modify COLUMN duration INTEGER;
   
-  
-  #Case Study Questions
+	#Pizza Table Simplify
+ Drop table if exists pizza_details;
+ create table pizza_details
+ select pn.pizza_id,pn.pizza_name,pr.toppings
+ from pizza_names pn,pizza_recipes pr
+ where pn.pizza_id=pr.pizza_id;
+ 
+ #Case Study Questions
 		#A.Pizza Metrics
 
 #01.How many pizzas were ordered?
-select count(pizza_id) as pizza_count
-from customer_orders;
+select count(order_id) as order_count
+from cust_ord_cl;
 
 #02.How many unique customer orders were made?
-select count(distinct(customer_id)) as customer_count
-from customer_orders;
+select count(distinct(order_id)) as unique_order_count
+from cust_ord_cl;
 
 #03.How many successful orders were delivered by each runner?
 select runner_id,count(order_id) as order_count
-from runner_orders
-where 
+from run_ord_cl
+where cancellation is null
 group by runner_id
 order by runner_id;
 
 #04.How many of each type of pizza was delivered?
-#05How many Vegetarian and Meatlovers were ordered by each customer?
-#06What was the maximum number of pizzas delivered in a single order?
-#07For each customer, how many delivered pizzas had at least 1 change and how many had no changes?
-#08How many pizzas were delivered that had both exclusions and extras?
-#09What was the total volume of pizzas ordered for each hour of the day?
-#10What was the volume of orders for each day of the week?
+select co.pizza_id,count(co.order_id) as pizza_count
+from cust_ord_cl co, run_ord_cl ro
+where co.order_id = ro.order_id 
+and ro.cancellation is null
+group by co.pizza_id;
+
+#05.How many Vegetarian and Meatlovers were ordered by each customer?
+SELECT
+  customer_id,
+  SUM(CASE WHEN pizza_id = 1 THEN 1 ELSE 0 END) AS Meatlovers_count,
+  SUM(CASE WHEN pizza_id = 2 THEN 1 ELSE 0 END) AS Vegetarian_count
+FROM cust_ord_cl
+GROUP BY customer_id
+ORDER BY customer_id;
+
+#06.What was the maximum number of pizzas delivered in a single order?
+select co.order_id,count(co.pizza_id) as pizza_count
+from cust_ord_cl co,run_ord_cl ro
+where co.order_id = ro.order_id
+and ro.cancellation is null
+group by order_id
+order by pizza_count desc
+limit 1;
+
+#07.For each customer, how many delivered pizzas had at least 1 change and how many had no changes?
+select co.customer_id,
+ SUM(CASE WHEN co.exclusions is not null or co.extras is not null THEN 1 ELSE 0 END) AS Changes_count,
+ SUM(CASE WHEN co.exclusions is null and co.extras is null THEN 1 ELSE 0 END) AS No_Changes_count
+from cust_ord_cl co,run_ord_cl ro
+where co.order_id = ro.order_id
+group by co.customer_id;
+
+#08.How many pizzas were delivered that had both exclusions and extras?
+select
+SUM(CASE WHEN co.exclusions is not null and co.extras is not null THEN 1 ELSE 0 END) AS pizza_count
+from cust_ord_cl co,run_ord_cl ro
+where co.order_id = ro.order_id 
+and ro.cancellation is null;
+
+#09.What was the total volume of pizzas ordered for each hour of the day?
+SELECT HOUR(order_time) AS hr, COUNT(order_id) AS order_count
+FROM cust_ord_cl
+GROUP BY 1
+order by 1;
+
+#10.What was the volume of orders for each day of the week?
+SELECT		
+    CASE 
+	WHEN WEEKDAY(order_time) = 0 THEN 'Monday'
+	WHEN WEEKDAY(order_time) = 1 THEN 'Tuesday'
+	WHEN WEEKDAY(order_time) = 2 THEN 'Wednesday'
+	WHEN WEEKDAY(order_time) = 3 THEN 'Thursday'
+	WHEN WEEKDAY(order_time) = 4 THEN 'Friday'
+	WHEN WEEKDAY(order_time) = 5 THEN 'Saturday'
+	WHEN WEEKDAY(order_time) = 6 THEN 'Sunday'
+   END AS Day_Week,
+   COUNT(order_id) AS order_count
+FROM cust_ord_cl
+group by Day_Week
+order by WEEKDAY(order_time);
+
+		#B. Runner and Customer Experience
+#01.How many runners signed up for each 1 week period? (i.e. week starts 2021-01-01)
+#02.What was the average time in minutes it took for each runner to arrive at the Pizza Runner HQ to pickup the order?
+#03.Is there any relationship between the number of pizzas and how long the order takes to prepare?
+#04.What was the average distance travelled for each customer?
+#05.What was the difference between the longest and shortest delivery times for all orders?
+#06.What was the average speed for each runner for each delivery and do you notice any trend for these values?
+#07.What is the successful delivery percentage for each runner?
