@@ -162,12 +162,6 @@ modify pickup_time DATETIME,
 modify COLUMN distance FLOAT,
 modify COLUMN duration INTEGER;
   
-	#Pizza Table Simplify
- Drop table if exists pizza_details;
- create table pizza_details
- select pn.pizza_id,pn.pizza_name,pr.toppings
- from pizza_names pn,pizza_recipes pr
- where pn.pizza_id=pr.pizza_id;
  
  #Case Study Questions
 		#A.Pizza Metrics
@@ -298,3 +292,37 @@ order by runner_id,order_id;
 select runner_id,Round(100*(count(distance)/count(*)),2) as Success_rate
 from run_ord_cl
 group by runner_id;
+
+	#C. Ingredient Optimisation
+# Pizza Recipe Table Cleaning
+DROP TABLE IF EXISTS piz_rec_cl;
+CREATE TABLE piz_rec_cl (
+	pizza_id int,
+	toppings int
+);
+INSERT INTO piz_rec_cl
+(pizza_id, toppings)
+VALUES
+('1', '1'),
+('1', '2'),
+('1', '3'),
+('1', '4'),
+('1', '5'),
+('1', '6'),
+('1', '8'),
+('1', '10'),
+('2', '4'),
+('2', '6'),
+('2', '7'),
+('2', '9'),
+('2', '11'),
+('2', '12');
+
+
+SELECT pizza_name, group_concat(topping_name) AS toppings
+FROM pizza_names n
+INNER JOIN piz_rec_cl r
+ON r.pizza_id = n.pizza_id
+INNER JOIN pizza_toppings t
+ON r.toppings = t.topping_id
+GROUP BY pizza_name;
