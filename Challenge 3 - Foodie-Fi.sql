@@ -2715,3 +2715,14 @@ where p.plan_id=s.plan_id;
 
 #07.What is the customer count and percentage breakdown of all 5 plan_name values at 2020-12-31?
 
+#08. How many customers have upgraded to an annual plan in 2020?
+
+#09. How many days on average does it take for a customer to an annual plan from the day they join Foodie-Fi?
+
+#10. Can you further breakdown this average value into 30 day periods (i.e. 0-30 days, 31-60 days etc)
+
+#11. How many customers downgraded from a pro monthly to a basic monthly plan in 2020
+
+
+# Challenge Payment Question
+#Creating Payments table
