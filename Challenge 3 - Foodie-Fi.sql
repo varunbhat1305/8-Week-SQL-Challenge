@@ -8,6 +8,11 @@ DROP TABLE IF EXISTS plans;
 CREATE TABLE plans (
   plan_id INTEGER,
   plan_name VARCHAR(13),
+  price DECIMAL(5,2)
+);
+
+INSERT INTO plans
+  (plan_id, plan_name, price)
 VALUES
   ('0', 'trial', '0'),
   ('1', 'basic monthly', '9.90'),
