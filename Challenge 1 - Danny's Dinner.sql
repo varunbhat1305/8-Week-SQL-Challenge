@@ -1,6 +1,7 @@
 # Database Creation & Data Insertion
 	# Creating Schema
-CREATE SCHEMA IF NOT EXISTS dannys_dinner;
+CREATE SCHEMA IF NOT EXISTS c1_dannys_dinner;
+USE c1_dannys_dinner;
 
 	#Creating Sales Table
 DROP TABLE IF EXISTS sales;

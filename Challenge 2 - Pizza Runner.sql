@@ -1,6 +1,8 @@
 #Database Creation & Data Insertion
 	#Creating Schema
-CREATE SCHEMA if not exists pizza_runner;
+CREATE SCHEMA if not exists c2_pizza_runner;
+USE c2_pizza_runner;
+
 	#Creating Runners Table
 DROP TABLE IF EXISTS runners;
 CREATE TABLE runners (
