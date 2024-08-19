@@ -2725,4 +2725,5 @@ where p.plan_id=s.plan_id;
 
 
 # Challenge Payment Question
-#Creating Payments table
+# Creating Payments_table
+
