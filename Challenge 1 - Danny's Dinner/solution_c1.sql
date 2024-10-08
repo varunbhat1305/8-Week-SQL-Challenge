@@ -1,5 +1,5 @@
-
 # Case Study Questions
+
 # 01. What is the total amount each customer spent at the restaurant?
 select s.customer_id, sum(m.price) as Total_Spent
 from sales s,menu m
