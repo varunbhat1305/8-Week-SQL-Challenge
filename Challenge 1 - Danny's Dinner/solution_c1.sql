@@ -33,7 +33,7 @@ group by m.product_name
 order by purchase_count desc
 limit 1;
 
-#05.Which item was the most popular for each customer?
+#05.Which item was the most popular for each customer? 
 WITH popular_item_cte AS
 (
  SELECT s.customer_id, m.product_name, 
